@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GenAI Project Ramp Planning - Scale AI</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <h1>Scale AI</h1>
+                    <span class="app-title">GenAI Project Ramp Planning</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Layout -->
+        <div class="main-layout">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <!-- Project Configuration -->
+                <div class="config-section">
+                    <div class="section-header" data-section="project">
+                        <h3>Project Configuration</h3>
+                        <span class="collapse-icon">−</span>
+                    </div>
+                    <div class="section-content" id="project-section">
+                        <div class="form-group">
+                            <label class="form-label">Project Name</label>
+                            <input type="text" class="form-control" id="projectName" value="Sample GenAI Project">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Target Tasks</label>
+                            <input type="number" class="form-control" id="targetTasks" value="10000">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Target Period (weeks)</label>
+                            <select class="form-control" id="targetPeriod">
+                                <option value="1">1 week</option>
+                                <option value="2" selected>2 weeks</option>
+                                <option value="3">3 weeks</option>
+                                <option value="4">4 weeks</option>
+                                <option value="5">5 weeks</option>
+                                <option value="6">6 weeks</option>
+                                <option value="7">7 weeks</option>
+                                <option value="8">8 weeks</option>
+                                <option value="9">9 weeks</option>
+                                <option value="10">10 weeks</option>
+                                <option value="11">11 weeks</option>
+                                <option value="12">12 weeks</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">L-1 AHT (hours)</label>
+                            <input type="number" class="form-control" id="l1AHT" value="0.5" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">L0 AHT (hours)</label>
+                            <input type="number" class="form-control" id="l0AHT" value="0.32" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">SBQ Rate %</label>
+                            <div class="slider-container">
+                                <input type="range" class="form-control" id="sbqRate" min="0" max="50" value="15">
+                                <span class="slider-value">15%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Workforce Settings -->
+                <div class="config-section">
+                    <div class="section-header" data-section="workforce">
+                        <h3>Workforce Settings</h3>
+                        <span class="collapse-icon">−</span>
+                    </div>
+                    <div class="section-content" id="workforce-section">
+                        <div class="form-group">
+                            <label class="form-label">Daily Hours per CB</label>
+                            <input type="number" class="form-control" id="dailyHours" value="5">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">WT Attempters</label>
+                            <input type="number" class="form-control" id="wtAttempters" value="100">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">WT Reviewers</label>
+                            <input type="number" class="form-control" id="wtReviewers" value="50">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Allocation Activation Rate %</label>
+                            <div class="slider-container">
+                                <input type="range" class="form-control" id="activationRate" min="50" max="100" value="80">
+                                <span class="slider-value">80%</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Screening Exam Pass Rate %</label>
+                            <div class="slider-container">
+                                <input type="range" class="form-control" id="screeningRate" min="30" max="90" value="60">
+                                <span class="slider-value">60%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timeline Settings -->
+                <div class="config-section">
+                    <div class="section-header" data-section="timeline">
+                        <h3>Timeline Settings</h3>
+                        <span class="collapse-icon">−</span>
+                    </div>
+                    <div class="section-content" id="timeline-section">
+                        <div class="form-group">
+                            <label class="form-label">Ramp Pattern</label>
+                            <select class="form-control" id="rampPattern">
+                                <option value="Linear" selected>Linear - Steady, consistent daily increases</option>
+                                <option value="Exponential">Exponential - Slow start with accelerating growth</option>
+                                <option value="S-Curve">S-Curve - Slow start, rapid middle growth, stabilization</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Weekend Boost %</label>
+                            <select class="form-control" id="weekendBoost">
+                                <option value="10">10%</option>
+                                <option value="20" selected>20%</option>
+                                <option value="30">30%</option>
+                                <option value="40">40%</option>
+                                <option value="50">50%</option>
+                                <option value="60">60%</option>
+                                <option value="70">70%</option>
+                                <option value="80">80%</option>
+                            </select>
+                        </div>
+                        
+                        <div class="bonus-missions">
+                            <h4>Bonus Missions</h4>
+                            <div class="form-group">
+                                <label class="form-label">Total Missions</label>
+                                <input type="number" class="form-control" id="totalMissions" value="3">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Expected Productivity Boost %</label>
+                                <select class="form-control" id="productivityBoost">
+                                    <option value="5">5%</option>
+                                    <option value="10">10%</option>
+                                    <option value="15">15%</option>
+                                    <option value="20" selected>20%</option>
+                                    <option value="25">25%</option>
+                                    <option value="30">30%</option>
+                                    <option value="35">35%</option>
+                                    <option value="40">40%</option>
+                                    <option value="45">45%</option>
+                                    <option value="50">50%</option>
+                                    <option value="55">55%</option>
+                                    <option value="60">60%</option>
+                                    <option value="65">65%</option>
+                                    <option value="70">70%</option>
+                                    <option value="75">75%</option>
+                                    <option value="80">80%</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Webinar Duration</label>
+                                <div class="radio-group">
+                                    <label class="radio-label">
+                                        <input type="radio" name="webinarDuration" value="30" checked>
+                                        30 minutes
+                                    </label>
+                                    <label class="radio-label">
+                                        <input type="radio" name="webinarDuration" value="60">
+                                        60 minutes
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Cost per 30min webinar ($)</label>
+                                <input type="number" class="form-control" id="cost30min" value="25" step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Cost per 60min webinar ($)</label>
+                                <input type="number" class="form-control" id="cost60min" value="45" step="0.01">
+                            </div>
+                            <div class="calculated-costs">
+                                <div class="cost-display">
+                                    <span>Cost of Missions: $<span id="costOfMissions">2500</span></span>
+                                </div>
+                                <div class="cost-display">
+                                    <span>Total Cost of Missions: $<span id="totalCostOfMissions">7500</span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Tabs -->
+                <div class="tabs">
+                    <button class="tab-button active" data-tab="overview">Overview</button>
+                    <button class="tab-button" data-tab="timeline">Timeline</button>
+                    <button class="tab-button" data-tab="resources">Resources</button>
+                    <button class="tab-button" data-tab="aht">AHT Analysis</button>
+                </div>
+
+                <!-- Overview Tab -->
+                <div class="tab-content active" id="overview-tab">
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <h4>Daily Tasks (Weekdays)</h4>
+                            <div class="metric-value" id="dailyTasksWeekdays">714</div>
+                        </div>
+                        <div class="metric-card">
+                            <h4>Daily Tasks (Weekends)</h4>
+                            <div class="metric-value" id="dailyTasksWeekends">857</div>
+                        </div>
+                        <div class="metric-card">
+                            <h4>Daily Attempters</h4>
+                            <div class="metric-value" id="dailyAttempters">48</div>
+                        </div>
+                        <div class="metric-card">
+                            <h4>Daily Reviewers</h4>
+                            <div class="metric-value" id="dailyReviewers">24</div>
+                        </div>
+                        <div class="metric-card">
+                            <h4>Average Daily Tasks</h4>
+                            <div class="metric-value" id="avgDailyTasks">750</div>
+                        </div>
+                        <div class="metric-card">
+                            <h4>Total Project Hours</h4>
+                            <div class="metric-value" id="totalProjectHours">3922</div>
+                        </div>
+                        <div class="metric-card">
+                            <h4>Peak CBs Required</h4>
+                            <div class="metric-value" id="peakCBs">172</div>
+                        </div>
+                        <div class="metric-card">
+                            <h4>Effective AHT per Task</h4>
+                            <div class="metric-value" id="effectiveAHT">0.37</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timeline Tab -->
+                <div class="tab-content" id="timeline-tab">
+                    <div class="chart-container">
+                        <canvas id="timelineChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Resources Tab -->
+                <div class="tab-content" id="resources-tab">
+                    <div class="chart-container">
+                        <canvas id="resourcesChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- AHT Analysis Tab -->
+                <div class="tab-content" id="aht-tab">
+                    <div class="chart-container">
+                        <canvas id="ahtChart"></canvas>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <span>© 2025 Scale AI - GenAI Project Ramp Planning Tool</span>
+                <div class="footer-actions">
+                    <button class="btn btn--secondary" id="exportBtn">Export CSV</button>
+                    <button class="btn btn--primary" id="saveBtn">Save Configuration</button>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
