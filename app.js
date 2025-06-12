@@ -226,6 +226,22 @@ class RampPlanningApp {
         
         // Generate daily breakdown for charts
         this.generateDailyBreakdown();
+        this.calculateWeeklyAllocatedHours();
+    }
+
+    calculateWeeklyAllocatedHours() {
+        const config = this.config;
+        const weeks = config.targetPeriodWeeks;
+        const weeklyHours = [];
+        for (let week = 0; week < weeks; week++) {
+            const start = week * 7;
+            const end = start + 7;
+            const hours = this.dailyBreakdown
+                .slice(start, end)
+                .reduce((sum, d) => sum + (d.attempters + d.reviewers) * config.dailyHours, 0);
+            weeklyHours.push(Math.round(hours));
+        }
+        this.metrics.weeklyAllocatedHours = weeklyHours;
     }
 
     generateDailyBreakdown() {
@@ -280,7 +296,11 @@ class RampPlanningApp {
         Object.keys(this.metrics).forEach(key => {
             const element = document.getElementById(key);
             if (element) {
-                if (key.includes('Cost')) {
+                if (Array.isArray(this.metrics[key])) {
+                    element.textContent = this.metrics[key]
+                        .map((val, idx) => `W${idx + 1}: ${val}`)
+                        .join(', ');
+                } else if (key.includes('Cost')) {
                     element.textContent = this.metrics[key].toLocaleString();
                 } else {
                     element.textContent = this.metrics[key];
@@ -521,7 +541,8 @@ class RampPlanningApp {
             ['Average Daily Tasks', this.metrics.avgDailyTasks],
             ['Total Project Hours', this.metrics.totalProjectHours],
             ['Peak CBs Required', this.metrics.peakCBs],
-            ['Effective AHT per Task', this.metrics.effectiveAHT]
+            ['Effective AHT per Task', this.metrics.effectiveAHT],
+            ['Weekly Allocated Hours', this.metrics.weeklyAllocatedHours.join('; ')]
         ];
         
         const csvContent = data.map(row => row.join(',')).join('\n');
