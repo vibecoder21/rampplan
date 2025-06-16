@@ -11,11 +11,7 @@ class RampPlanningApp {
             projectName: "Sample GenAI Project",
             targetTasks: 10000,
             targetPeriodWeeks: 2,
- codex/add-weekly-allocated-hours-metric
-            l1AHT: 0.5,        // L-1
-
             l1AHT: 0.5,        // L-1 AHT
- main
             l0AHT: 0.32,
             sbqRate: 15,       // L-1 SBQ
             l1StageAHT: 0.45,
@@ -26,6 +22,7 @@ class RampPlanningApp {
             sbqRateL10: 5,
             l12StageAHT: 0.65,
             sbqRateL12: 3,
+            activeLayers: [-1, 0, 1, 4, 10, 12],
             dailyHours: 5,
             wtAttempters: 100,
             wtReviewers: 50,
@@ -43,6 +40,7 @@ class RampPlanningApp {
 
     init() {
         this.bindEvents();
+        this.updateLayerVisibility();
         this.setupTabs();
         this.setupCollapsibleSections();
         this.calculateMetrics();
@@ -85,6 +83,15 @@ class RampPlanningApp {
             if (element) {
                 element.addEventListener('change', () => this.handleInputChange(id, element.value));
             }
+        });
+
+        const layerCheckboxes = document.querySelectorAll('#layerSelect input[type="checkbox"]');
+        layerCheckboxes.forEach(box => {
+            box.addEventListener('change', () => {
+                const selected = Array.from(document.querySelectorAll('#layerSelect input[type="checkbox"]:checked'))
+                    .map(cb => parseInt(cb.value));
+                this.handleLayerSelection(selected);
+            });
         });
 
         // Radio buttons for webinar duration
@@ -365,6 +372,28 @@ class RampPlanningApp {
         this.createTimelineChart();
         this.createResourcesChart();
         this.createAHTChart();
+    }
+
+    handleLayerSelection(layers) {
+        this.config.activeLayers = layers;
+        this.updateLayerVisibility();
+        this.calculateMetrics();
+        this.updateUI();
+        this.updateCharts();
+    }
+
+    updateLayerVisibility() {
+        const groups = document.querySelectorAll('.layer-group');
+        groups.forEach(group => {
+            const layer = parseInt(group.dataset.layer);
+            group.style.display = this.config.activeLayers.includes(layer) ? '' : 'none';
+        });
+
+        const layerCheckboxes = document.querySelectorAll('#layerSelect input[type="checkbox"]');
+        layerCheckboxes.forEach(box => {
+            const layer = parseInt(box.value);
+            box.checked = this.config.activeLayers.includes(layer);
+        });
     }
 
     createTimelineChart() {
