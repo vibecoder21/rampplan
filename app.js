@@ -14,12 +14,16 @@ class RampPlanningApp {
             l1AHT: 0.5,        // L-1 AHT
             l0AHT: 0.32,
             sbqRate: 15,       // L-1 SBQ
+            enableL1: false,
             l1StageAHT: 0.45,
             sbqRateL1: 10,
+            enableL4: false,
             l4StageAHT: 0.55,
             sbqRateL4: 8,
+            enableL10: false,
             l10StageAHT: 0.6,
             sbqRateL10: 5,
+            enableL12: false,
             l12StageAHT: 0.65,
             sbqRateL12: 3,
             dailyHours: 5,
@@ -74,6 +78,15 @@ class RampPlanningApp {
             }
         });
 
+        // Layer checkboxes
+        const layerToggles = ['enableL1', 'enableL4', 'enableL10', 'enableL12'];
+        layerToggles.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('change', () => this.handleLayerToggle(id, element.checked));
+            }
+        });
+
         // Dropdowns
         const dropdowns = ['rampPattern', 'weekendBoost', 'productivityBoost'];
         dropdowns.forEach(id => {
@@ -110,6 +123,23 @@ class RampPlanningApp {
             this.config[key] = value;
         }
 
+        this.calculateMetrics();
+        this.updateUI();
+        this.updateCharts();
+    }
+
+    handleLayerToggle(key, enabled) {
+        this.config[key] = enabled;
+        const fieldMap = {
+            enableL1: 'l1StageFields',
+            enableL4: 'l4StageFields',
+            enableL10: 'l10StageFields',
+            enableL12: 'l12StageFields'
+        };
+        const fields = document.getElementById(fieldMap[key]);
+        if (fields) {
+            fields.style.display = enabled ? '' : 'none';
+        }
         this.calculateMetrics();
         this.updateUI();
         this.updateCharts();
@@ -180,13 +210,32 @@ class RampPlanningApp {
         const workingDays = config.targetPeriodWeeks * workingDaysPerWeek;
         const weekendDays = config.targetPeriodWeeks * weekendDaysPerWeek;
         
-        // SBQ adjustment
+        // SBQ adjustment and layered tasks
         const l1Tasks = config.targetTasks / (1 - config.sbqRate / 100);
         const l0Tasks = l1Tasks * 0.7; // Fixed 70% yield
-        const l1StageTasks = l0Tasks / (1 - config.sbqRateL1 / 100);
-        const l4StageTasks = l1StageTasks / (1 - config.sbqRateL4 / 100);
-        const l10StageTasks = l4StageTasks / (1 - config.sbqRateL10 / 100);
-        const l12StageTasks = l10StageTasks / (1 - config.sbqRateL12 / 100);
+
+        let lastTasks = l0Tasks;
+        let l1StageTasks = 0;
+        let l4StageTasks = 0;
+        let l10StageTasks = 0;
+        let l12StageTasks = 0;
+
+        if (config.enableL1) {
+            l1StageTasks = lastTasks / (1 - config.sbqRateL1 / 100);
+            lastTasks = l1StageTasks;
+        }
+        if (config.enableL4) {
+            l4StageTasks = lastTasks / (1 - config.sbqRateL4 / 100);
+            lastTasks = l4StageTasks;
+        }
+        if (config.enableL10) {
+            l10StageTasks = lastTasks / (1 - config.sbqRateL10 / 100);
+            lastTasks = l10StageTasks;
+        }
+        if (config.enableL12) {
+            l12StageTasks = lastTasks / (1 - config.sbqRateL12 / 100);
+            lastTasks = l12StageTasks;
+        }
         
         // Effective workforce (considering activation and screening rates)
         const effectiveAttempters = config.wtAttempters * (config.activationRate / 100) * (config.screeningRate / 100);
@@ -207,10 +256,10 @@ class RampPlanningApp {
         // Calculate total hours
         const l1Hours = l1Tasks * config.l1AHT;
         const l0Hours = l0Tasks * config.l0AHT;
-        const l1StageHours = l1StageTasks * config.l1StageAHT;
-        const l4StageHours = l4StageTasks * config.l4StageAHT;
-        const l10StageHours = l10StageTasks * config.l10StageAHT;
-        const l12StageHours = l12StageTasks * config.l12StageAHT;
+        const l1StageHours = config.enableL1 ? l1StageTasks * config.l1StageAHT : 0;
+        const l4StageHours = config.enableL4 ? l4StageTasks * config.l4StageAHT : 0;
+        const l10StageHours = config.enableL10 ? l10StageTasks * config.l10StageAHT : 0;
+        const l12StageHours = config.enableL12 ? l12StageTasks * config.l12StageAHT : 0;
         const totalHours = l1Hours + l0Hours + l1StageHours + l4StageHours + l10StageHours + l12StageHours;
         
         // Calculate peak CBs required
@@ -298,12 +347,12 @@ class RampPlanningApp {
             // Calculate AHT (improving over time)
             const ahtImprovement = 1 - (day / totalDays) * 0.1; // 10% improvement by end
             const dailyAHTs = {
-                l1: config.l1AHT * ahtImprovement,
+                l1: config.l1AHT * (1 / (1 - config.sbqRate / 100)) * ahtImprovement,
                 l0: config.l0AHT * ahtImprovement,
-                l1Stage: config.l1StageAHT * ahtImprovement,
-                l4Stage: config.l4StageAHT * ahtImprovement,
-                l10Stage: config.l10StageAHT * ahtImprovement,
-                l12Stage: config.l12StageAHT * ahtImprovement
+                l1Stage: config.l1StageAHT * (config.enableL1 ? 1 / (1 - config.sbqRateL1 / 100) : 1) * ahtImprovement,
+                l4Stage: config.l4StageAHT * (config.enableL4 ? 1 / (1 - config.sbqRateL4 / 100) : 1) * ahtImprovement,
+                l10Stage: config.l10StageAHT * (config.enableL10 ? 1 / (1 - config.sbqRateL10 / 100) : 1) * ahtImprovement,
+                l12Stage: config.l12StageAHT * (config.enableL12 ? 1 / (1 - config.sbqRateL12 / 100) : 1) * ahtImprovement
             };
 
             dailyData.push({
@@ -508,22 +557,27 @@ class RampPlanningApp {
         }
         
         const labels = this.dailyBreakdown.map(d => `Day ${d.day}`);
-        
-        const datasets = [
-            { label: 'L-1', color: '#5D878F', key: 'l1' },
-            { label: 'L0', color: '#1FB8CD', key: 'l0' },
-            { label: 'L1', color: '#FFC185', key: 'l1Stage' },
-            { label: 'L4', color: '#B4413C', key: 'l4Stage' },
-            { label: 'L10', color: '#ECEBD5', key: 'l10Stage' },
-            { label: 'L12', color: '#A084E8', key: 'l12Stage' }
-        ].map(item => ({
-            label: item.label,
-            data: this.dailyBreakdown.map(d => d.ahts[item.key].toFixed(3)),
-            borderColor: item.color,
-            backgroundColor: item.color + '33',
-            fill: true,
-            tension: 0.4
-        }));
+        const config = this.config;
+
+        const layerConfigs = [
+            { label: 'L-1', color: '#5D878F', key: 'l1', enabled: true },
+            { label: 'L0', color: '#1FB8CD', key: 'l0', enabled: true },
+            { label: 'L1', color: '#FFC185', key: 'l1Stage', enabled: config.enableL1 },
+            { label: 'L4', color: '#B4413C', key: 'l4Stage', enabled: config.enableL4 },
+            { label: 'L10', color: '#ECEBD5', key: 'l10Stage', enabled: config.enableL10 },
+            { label: 'L12', color: '#A084E8', key: 'l12Stage', enabled: config.enableL12 }
+        ];
+
+        const datasets = layerConfigs
+            .filter(l => l.enabled)
+            .map(item => ({
+                label: item.label,
+                data: this.dailyBreakdown.map(d => d.ahts[item.key].toFixed(3)),
+                borderColor: item.color,
+                backgroundColor: item.color + '33',
+                fill: true,
+                tension: 0.4
+            }));
 
         this.charts.aht = new Chart(ctx, {
             type: 'line',

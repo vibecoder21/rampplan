@@ -1193,3 +1193,7 @@ body {
 .main-content::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 107, 61, 0.5);
 }
+
+.layer-fields {
+  margin-left: var(--space-16);
+}
