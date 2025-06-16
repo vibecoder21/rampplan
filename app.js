@@ -22,6 +22,7 @@ class RampPlanningApp {
             sbqRateL10: 5,
             l12StageAHT: 0.65,
             sbqRateL12: 3,
+            activeLayers: [-1, 0, 1, 4, 10, 12],
             dailyHours: 5,
             wtAttempters: 100,
             wtReviewers: 50,
@@ -39,6 +40,7 @@ class RampPlanningApp {
 
     init() {
         this.bindEvents();
+        this.updateLayerVisibility();
         this.setupTabs();
         this.setupCollapsibleSections();
         this.calculateMetrics();
@@ -82,6 +84,14 @@ class RampPlanningApp {
                 element.addEventListener('change', () => this.handleInputChange(id, element.value));
             }
         });
+
+        const layerSelect = document.getElementById('layerSelect');
+        if (layerSelect) {
+            layerSelect.addEventListener('change', () => {
+                const selected = Array.from(layerSelect.selectedOptions).map(opt => parseInt(opt.value));
+                this.handleLayerSelection(selected);
+            });
+        }
 
         // Radio buttons for webinar duration
         const radios = document.querySelectorAll('input[name="webinarDuration"]');
@@ -361,6 +371,22 @@ class RampPlanningApp {
         this.createTimelineChart();
         this.createResourcesChart();
         this.createAHTChart();
+    }
+
+    handleLayerSelection(layers) {
+        this.config.activeLayers = layers;
+        this.updateLayerVisibility();
+        this.calculateMetrics();
+        this.updateUI();
+        this.updateCharts();
+    }
+
+    updateLayerVisibility() {
+        const groups = document.querySelectorAll('.layer-group');
+        groups.forEach(group => {
+            const layer = parseInt(group.dataset.layer);
+            group.style.display = this.config.activeLayers.includes(layer) ? '' : 'none';
+        });
     }
 
     createTimelineChart() {

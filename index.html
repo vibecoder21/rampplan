@@ -56,62 +56,85 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">L-1 AHT (hours)</label>
-                            <input type="number" class="form-control" id="l1AHT" value="0.5" step="0.01">
+                            <label class="form-label">Select Layers</label>
+                            <select class="form-control" id="layerSelect" multiple>
+                                <option value="-1" selected>L-1</option>
+                                <option value="0" selected>L0</option>
+                                <option value="1" selected>L1</option>
+                                <option value="4" selected>L4</option>
+                                <option value="10" selected>L10</option>
+                                <option value="12" selected>L12</option>
+                            </select>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">L0 AHT (hours)</label>
-                            <input type="number" class="form-control" id="l0AHT" value="0.32" step="0.01">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">SBQ Rate %</label>
-                            <div class="slider-container">
-                                <input type="range" class="form-control" id="sbqRate" min="0" max="50" value="15">
-                                <span class="slider-value">15%</span>
+                        <div class="layer-group" data-layer="-1">
+                            <div class="form-group">
+                                <label class="form-label">L-1 AHT (hours)</label>
+                                <input type="number" class="form-control" id="l1AHT" value="0.5" step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">L-1 SBQ Rate %</label>
+                                <div class="slider-container">
+                                    <input type="range" class="form-control" id="sbqRate" min="0" max="50" value="15">
+                                    <span class="slider-value">15%</span>
+                                </div>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">L1 AHT (hours)</label>
-                            <input type="number" class="form-control" id="l1StageAHT" value="0.45" step="0.01">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">L1 SBQ Rate %</label>
-                            <div class="slider-container">
-                                <input type="range" class="form-control" id="sbqRateL1" min="0" max="50" value="10">
-                                <span class="slider-value">10%</span>
+                        <div class="layer-group" data-layer="0">
+                            <div class="form-group">
+                                <label class="form-label">L0 AHT (hours)</label>
+                                <input type="number" class="form-control" id="l0AHT" value="0.32" step="0.01">
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">L4 AHT (hours)</label>
-                            <input type="number" class="form-control" id="l4StageAHT" value="0.55" step="0.01">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">L4 SBQ Rate %</label>
-                            <div class="slider-container">
-                                <input type="range" class="form-control" id="sbqRateL4" min="0" max="50" value="8">
-                                <span class="slider-value">8%</span>
+                        <div class="layer-group" data-layer="1">
+                            <div class="form-group">
+                                <label class="form-label">L1 AHT (hours)</label>
+                                <input type="number" class="form-control" id="l1StageAHT" value="0.45" step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">L1 SBQ Rate %</label>
+                                <div class="slider-container">
+                                    <input type="range" class="form-control" id="sbqRateL1" min="0" max="50" value="10">
+                                    <span class="slider-value">10%</span>
+                                </div>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">L10 AHT (hours)</label>
-                            <input type="number" class="form-control" id="l10StageAHT" value="0.6" step="0.01">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">L10 SBQ Rate %</label>
-                            <div class="slider-container">
-                                <input type="range" class="form-control" id="sbqRateL10" min="0" max="50" value="5">
-                                <span class="slider-value">5%</span>
+                        <div class="layer-group" data-layer="4">
+                            <div class="form-group">
+                                <label class="form-label">L4 AHT (hours)</label>
+                                <input type="number" class="form-control" id="l4StageAHT" value="0.55" step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">L4 SBQ Rate %</label>
+                                <div class="slider-container">
+                                    <input type="range" class="form-control" id="sbqRateL4" min="0" max="50" value="8">
+                                    <span class="slider-value">8%</span>
+                                </div>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">L12 AHT (hours)</label>
-                            <input type="number" class="form-control" id="l12StageAHT" value="0.65" step="0.01">
+                        <div class="layer-group" data-layer="10">
+                            <div class="form-group">
+                                <label class="form-label">L10 AHT (hours)</label>
+                                <input type="number" class="form-control" id="l10StageAHT" value="0.6" step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">L10 SBQ Rate %</label>
+                                <div class="slider-container">
+                                    <input type="range" class="form-control" id="sbqRateL10" min="0" max="50" value="5">
+                                    <span class="slider-value">5%</span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">L12 SBQ Rate %</label>
-                            <div class="slider-container">
-                                <input type="range" class="form-control" id="sbqRateL12" min="0" max="50" value="3">
-                                <span class="slider-value">3%</span>
+                        <div class="layer-group" data-layer="12">
+                            <div class="form-group">
+                                <label class="form-label">L12 AHT (hours)</label>
+                                <input type="number" class="form-control" id="l12StageAHT" value="0.65" step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">L12 SBQ Rate %</label>
+                                <div class="slider-container">
+                                    <input type="range" class="form-control" id="sbqRateL12" min="0" max="50" value="3">
+                                    <span class="slider-value">3%</span>
+                                </div>
                             </div>
                         </div>
                     </div>
