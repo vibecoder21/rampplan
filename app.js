@@ -11,7 +11,11 @@ class RampPlanningApp {
             projectName: "Sample GenAI Project",
             targetTasks: 10000,
             targetPeriodWeeks: 2,
+ codex/add-weekly-allocated-hours-metric
+            l1AHT: 0.5,        // L-1
+
             l1AHT: 0.5,        // L-1 AHT
+ main
             l0AHT: 0.32,
             sbqRate: 15,       // L-1 SBQ
             l1StageAHT: 0.45,
