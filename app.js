@@ -11,9 +11,17 @@ class RampPlanningApp {
             projectName: "Sample GenAI Project",
             targetTasks: 10000,
             targetPeriodWeeks: 2,
-            l1AHT: 0.5,
+            l1AHT: 0.5,        // L-1
             l0AHT: 0.32,
-            sbqRate: 15,
+            sbqRate: 15,       // L-1 SBQ
+            l1StageAHT: 0.45,
+            sbqRateL1: 10,
+            l4StageAHT: 0.55,
+            sbqRateL4: 8,
+            l10StageAHT: 0.6,
+            sbqRateL10: 5,
+            l12StageAHT: 0.65,
+            sbqRateL12: 3,
             dailyHours: 5,
             wtAttempters: 100,
             wtReviewers: 50,
@@ -41,8 +49,9 @@ class RampPlanningApp {
     bindEvents() {
         // Form inputs
         const inputs = [
-            'projectName', 'targetTasks', 'targetPeriodWeeks', 'l1AHT', 'l0AHT', 
-            'dailyHours', 'wtAttempters', 'wtReviewers', 'totalMissions', 
+            'projectName', 'targetTasks', 'targetPeriodWeeks',
+            'l1AHT', 'l0AHT', 'l1StageAHT', 'l4StageAHT', 'l10StageAHT', 'l12StageAHT',
+            'dailyHours', 'wtAttempters', 'wtReviewers', 'totalMissions',
             'cost30min', 'cost60min'
         ];
         
@@ -54,7 +63,7 @@ class RampPlanningApp {
         });
 
         // Sliders
-        const sliders = ['sbqRate', 'activationRate', 'screeningRate'];
+        const sliders = ['sbqRate', 'sbqRateL1', 'sbqRateL4', 'sbqRateL10', 'sbqRateL12', 'activationRate', 'screeningRate'];
         sliders.forEach(id => {
             const element = document.getElementById(id);
             if (element) {
@@ -93,9 +102,9 @@ class RampPlanningApp {
         // Convert to appropriate type
         if (['targetTasks', 'targetPeriodWeeks', 'dailyHours', 'wtAttempters', 'wtReviewers', 'totalMissions', 'webinarDuration'].includes(key)) {
             this.config[key] = parseInt(value);
-        } else if (['l1AHT', 'l0AHT', 'cost30min', 'cost60min'].includes(key)) {
+        } else if (['l1AHT', 'l0AHT', 'l1StageAHT', 'l4StageAHT', 'l10StageAHT', 'l12StageAHT', 'cost30min', 'cost60min'].includes(key)) {
             this.config[key] = parseFloat(value);
-        } else if (['sbqRate', 'activationRate', 'screeningRate', 'weekendBoost', 'productivityBoost'].includes(key)) {
+        } else if (['sbqRate', 'sbqRateL1', 'sbqRateL4', 'sbqRateL10', 'sbqRateL12', 'activationRate', 'screeningRate', 'weekendBoost', 'productivityBoost'].includes(key)) {
             this.config[key] = parseInt(value);
         } else {
             this.config[key] = value;
@@ -174,6 +183,10 @@ class RampPlanningApp {
         // SBQ adjustment
         const l1Tasks = config.targetTasks / (1 - config.sbqRate / 100);
         const l0Tasks = l1Tasks * 0.7; // Fixed 70% yield
+        const l1StageTasks = l0Tasks / (1 - config.sbqRateL1 / 100);
+        const l4StageTasks = l1StageTasks / (1 - config.sbqRateL4 / 100);
+        const l10StageTasks = l4StageTasks / (1 - config.sbqRateL10 / 100);
+        const l12StageTasks = l10StageTasks / (1 - config.sbqRateL12 / 100);
         
         // Effective workforce (considering activation and screening rates)
         const effectiveAttempters = config.wtAttempters * (config.activationRate / 100) * (config.screeningRate / 100);
@@ -194,14 +207,20 @@ class RampPlanningApp {
         // Calculate total hours
         const l1Hours = l1Tasks * config.l1AHT;
         const l0Hours = l0Tasks * config.l0AHT;
-        const totalHours = l1Hours + l0Hours;
+        const l1StageHours = l1StageTasks * config.l1StageAHT;
+        const l4StageHours = l4StageTasks * config.l4StageAHT;
+        const l10StageHours = l10StageTasks * config.l10StageAHT;
+        const l12StageHours = l12StageTasks * config.l12StageAHT;
+        const totalHours = l1Hours + l0Hours + l1StageHours + l4StageHours + l10StageHours + l12StageHours;
         
         // Calculate peak CBs required
         const peakDailyHours = Math.max(weekdayTasks * config.l1AHT, weekendTasks * config.l1AHT);
         const peakCBs = Math.ceil(peakDailyHours / config.dailyHours);
         
         // Calculate effective AHT
-        const effectiveAHT = (l1Hours + l0Hours) / (l1Tasks + l0Tasks);
+        const effectiveAHT =
+            (l1Hours + l0Hours + l1StageHours + l4StageHours + l10StageHours + l12StageHours) /
+            (l1Tasks + l0Tasks + l1StageTasks + l4StageTasks + l10StageTasks + l12StageTasks);
         
         // Bonus mission costs
         const selectedWebinarCost = config.webinarDuration === 30 ? config.cost30min : config.cost60min;
@@ -220,6 +239,10 @@ class RampPlanningApp {
             effectiveAHT: effectiveAHT.toFixed(2),
             l1Tasks: Math.round(l1Tasks),
             l0Tasks: Math.round(l0Tasks),
+            l1StageTasks: Math.round(l1StageTasks),
+            l4StageTasks: Math.round(l4StageTasks),
+            l10StageTasks: Math.round(l10StageTasks),
+            l12StageTasks: Math.round(l12StageTasks),
             costOfMissions: costOfMissions,
             totalCostOfMissions: totalCostOfMissions
         };
@@ -274,15 +297,23 @@ class RampPlanningApp {
             
             // Calculate AHT (improving over time)
             const ahtImprovement = 1 - (day / totalDays) * 0.1; // 10% improvement by end
-            const dailyAHT = config.l1AHT * ahtImprovement;
-            
+            const dailyAHTs = {
+                l1: config.l1AHT * ahtImprovement,
+                l0: config.l0AHT * ahtImprovement,
+                l1Stage: config.l1StageAHT * ahtImprovement,
+                l4Stage: config.l4StageAHT * ahtImprovement,
+                l10Stage: config.l10StageAHT * ahtImprovement,
+                l12Stage: config.l12StageAHT * ahtImprovement
+            };
+
             dailyData.push({
                 day,
                 dayName,
                 isWeekend,
                 tasks: adjustedTasks,
-                aht: dailyAHT,
-                hours: adjustedTasks * dailyAHT,
+                aht: dailyAHTs.l1,
+                ahts: dailyAHTs,
+                hours: adjustedTasks * dailyAHTs.l1,
                 attempters: Math.round(this.metrics.dailyAttempters * rampMultiplier),
                 reviewers: Math.round(this.metrics.dailyReviewers * rampMultiplier)
             });
@@ -478,18 +509,27 @@ class RampPlanningApp {
         
         const labels = this.dailyBreakdown.map(d => `Day ${d.day}`);
         
+        const datasets = [
+            { label: 'L-1', color: '#5D878F', key: 'l1' },
+            { label: 'L0', color: '#1FB8CD', key: 'l0' },
+            { label: 'L1', color: '#FFC185', key: 'l1Stage' },
+            { label: 'L4', color: '#B4413C', key: 'l4Stage' },
+            { label: 'L10', color: '#ECEBD5', key: 'l10Stage' },
+            { label: 'L12', color: '#A084E8', key: 'l12Stage' }
+        ].map(item => ({
+            label: item.label,
+            data: this.dailyBreakdown.map(d => d.ahts[item.key].toFixed(3)),
+            borderColor: item.color,
+            backgroundColor: item.color + '33',
+            fill: true,
+            tension: 0.4
+        }));
+
         this.charts.aht = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: labels,
-                datasets: [{
-                    label: 'Average AHT (hours)',
-                    data: this.dailyBreakdown.map(d => d.aht.toFixed(3)),
-                    borderColor: '#5D878F',
-                    backgroundColor: 'rgba(93, 135, 143, 0.1)',
-                    fill: true,
-                    tension: 0.4
-                }]
+                datasets: datasets
             },
             options: {
                 responsive: true,
