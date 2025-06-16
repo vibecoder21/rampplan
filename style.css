@@ -450,6 +450,10 @@ select.form-control {
   margin-bottom: var(--space-16);
 }
 
+.layer-group {
+  margin-bottom: var(--space-16);
+}
+
 /* Card component */
 .card {
   background-color: var(--color-surface);
