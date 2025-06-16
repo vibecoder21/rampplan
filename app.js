@@ -85,13 +85,14 @@ class RampPlanningApp {
             }
         });
 
-        const layerSelect = document.getElementById('layerSelect');
-        if (layerSelect) {
-            layerSelect.addEventListener('change', () => {
-                const selected = Array.from(layerSelect.selectedOptions).map(opt => parseInt(opt.value));
+        const layerCheckboxes = document.querySelectorAll('#layerSelect input[type="checkbox"]');
+        layerCheckboxes.forEach(box => {
+            box.addEventListener('change', () => {
+                const selected = Array.from(document.querySelectorAll('#layerSelect input[type="checkbox"]:checked'))
+                    .map(cb => parseInt(cb.value));
                 this.handleLayerSelection(selected);
             });
-        }
+        });
 
         // Radio buttons for webinar duration
         const radios = document.querySelectorAll('input[name="webinarDuration"]');
@@ -386,6 +387,12 @@ class RampPlanningApp {
         groups.forEach(group => {
             const layer = parseInt(group.dataset.layer);
             group.style.display = this.config.activeLayers.includes(layer) ? '' : 'none';
+        });
+
+        const layerCheckboxes = document.querySelectorAll('#layerSelect input[type="checkbox"]');
+        layerCheckboxes.forEach(box => {
+            const layer = parseInt(box.value);
+            box.checked = this.config.activeLayers.includes(layer);
         });
     }
 

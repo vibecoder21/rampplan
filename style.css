@@ -454,6 +454,24 @@ select.form-control {
   margin-bottom: var(--space-16);
 }
 
+.checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-12);
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+}
+
+.checkbox-group input[type="checkbox"] {
+  accent-color: var(--color-primary);
+}
+
 /* Card component */
 .card {
   background-color: var(--color-surface);

@@ -57,14 +57,14 @@
                         </div>
                         <div class="form-group">
                             <label class="form-label">Select Layers</label>
-                            <select class="form-control" id="layerSelect" multiple>
-                                <option value="-1" selected>L-1</option>
-                                <option value="0" selected>L0</option>
-                                <option value="1" selected>L1</option>
-                                <option value="4" selected>L4</option>
-                                <option value="10" selected>L10</option>
-                                <option value="12" selected>L12</option>
-                            </select>
+                            <div id="layerSelect" class="checkbox-group">
+                                <label><input type="checkbox" class="layer-checkbox" value="-1" checked> L-1</label>
+                                <label><input type="checkbox" class="layer-checkbox" value="0" checked> L0</label>
+                                <label><input type="checkbox" class="layer-checkbox" value="1" checked> L1</label>
+                                <label><input type="checkbox" class="layer-checkbox" value="4" checked> L4</label>
+                                <label><input type="checkbox" class="layer-checkbox" value="10" checked> L10</label>
+                                <label><input type="checkbox" class="layer-checkbox" value="12" checked> L12</label>
+                            </div>
                         </div>
                         <div class="layer-group" data-layer="-1">
                             <div class="form-group">
