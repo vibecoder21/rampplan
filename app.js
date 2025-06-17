@@ -408,9 +408,6 @@ class RampPlanningApp {
         const labels = this.dailyBreakdown.map(d => `Day ${d.day}`);
         const weekdayTasks = this.dailyBreakdown.filter(d => !d.isWeekend).map(d => d.tasks);
         const weekendTasks = this.dailyBreakdown.filter(d => d.isWeekend).map(d => d.tasks);
-        const weekdayLabels = this.dailyBreakdown.filter(d => !d.isWeekend).map(d => `Day ${d.day}`);
-        const weekendLabels = this.dailyBreakdown.filter(d => d.isWeekend).map(d => `Day ${d.day}`);
-
         this.charts.timeline = new Chart(ctx, {
             type: 'bar',
             data: {
