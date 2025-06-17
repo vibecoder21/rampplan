@@ -206,16 +206,16 @@ class RampPlanningApp {
 
         // Calculate base task capacity per day based on workforce
         const baseCapacityPerDay = effectiveAttempters * config.dailyHours / config.l1AHT;
-        
+
         // Calculate actual daily tasks based on capacity and target
         const totalTasksNeeded = l1Tasks + l0Tasks;
         const avgTasksPerDay = Math.min(totalTasksNeeded / totalDays, baseCapacityPerDay);
-        
+
         // Apply weekend boost
         const weekendMultiplier = 1 + (config.weekendBoost / 100);
         const weekdayTasks = avgTasksPerDay;
         const weekendTasks = avgTasksPerDay * weekendMultiplier;
-        
+
         // Calculate total hours
         const l1Hours = l1Tasks * config.l1AHT;
         const l0Hours = l0Tasks * config.l0AHT;
@@ -224,21 +224,21 @@ class RampPlanningApp {
         const l10StageHours = l10StageTasks * config.l10StageAHT;
         const l12StageHours = l12StageTasks * config.l12StageAHT;
         const totalHours = l1Hours + l0Hours + l1StageHours + l4StageHours + l10StageHours + l12StageHours;
-        
+
         // Calculate peak CBs required
         const peakDailyHours = Math.max(weekdayTasks * config.l1AHT, weekendTasks * config.l1AHT);
         const peakCBs = Math.ceil(peakDailyHours / config.dailyHours);
-        
+
         // Calculate effective AHT
         const effectiveAHT =
             (l1Hours + l0Hours + l1StageHours + l4StageHours + l10StageHours + l12StageHours) /
             (l1Tasks + l0Tasks + l1StageTasks + l4StageTasks + l10StageTasks + l12StageTasks);
-        
+
         // Bonus mission costs
         const selectedWebinarCost = config.webinarDuration === 30 ? config.cost30min : config.cost60min;
         const costOfMissions = config.wtAttempters * selectedWebinarCost;
         const totalCostOfMissions = config.totalMissions * costOfMissions;
-        
+
         // Store calculated metrics
         this.metrics = {
             dailyTasksWeekdays: Math.round(weekdayTasks),
@@ -258,7 +258,7 @@ class RampPlanningApp {
             costOfMissions: costOfMissions,
             totalCostOfMissions: totalCostOfMissions
         };
-        
+
         // Generate daily breakdown for charts
         this.generateDailyBreakdown();
         this.calculateWeeklyAllocatedHours();
@@ -283,11 +283,11 @@ class RampPlanningApp {
         const config = this.config;
         const totalDays = config.targetPeriodWeeks * 7;
         const dailyData = [];
-        
+
         for (let day = 1; day <= totalDays; day++) {
             const isWeekend = day % 7 === 0 || day % 7 === 6;
             const dayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][day % 7];
-            
+
             // Apply ramp pattern
             let rampMultiplier = 1;
             switch (config.rampPattern) {
@@ -302,11 +302,11 @@ class RampPlanningApp {
                     rampMultiplier = 1 / (1 + Math.exp(-x));
                     break;
             }
-            
+
             // Calculate tasks for this day
             const baseTasks = isWeekend ? this.metrics.dailyTasksWeekends : this.metrics.dailyTasksWeekdays;
             const adjustedTasks = Math.round(baseTasks * rampMultiplier);
-            
+
             // Calculate AHT (improving over time)
             const ahtImprovement = 1 - (day / totalDays) * 0.1; // 10% improvement by end
             const dailyAHTs = {
@@ -330,7 +330,7 @@ class RampPlanningApp {
                 reviewers: Math.round(this.metrics.dailyReviewers * rampMultiplier)
             });
         }
-        
+
         this.dailyBreakdown = dailyData;
     }
 
@@ -350,7 +350,7 @@ class RampPlanningApp {
                 }
             }
         });
-        
+
         // Update cost displays
         document.getElementById('costOfMissions').textContent = this.metrics.costOfMissions.toLocaleString();
         document.getElementById('totalCostOfMissions').textContent = this.metrics.totalCostOfMissions.toLocaleString();
@@ -368,7 +368,7 @@ class RampPlanningApp {
                 chart.update();
             }
         });
-        
+
         // Recreate charts with new data
         this.createTimelineChart();
         this.createResourcesChart();
@@ -400,17 +400,17 @@ class RampPlanningApp {
     createTimelineChart() {
         const ctx = document.getElementById('timelineChart');
         if (!ctx) return;
-        
+
         if (this.charts.timeline) {
             this.charts.timeline.destroy();
         }
-        
+
         const labels = this.dailyBreakdown.map(d => `Day ${d.day}`);
         const weekdayTasks = this.dailyBreakdown.filter(d => !d.isWeekend).map(d => d.tasks);
         const weekendTasks = this.dailyBreakdown.filter(d => d.isWeekend).map(d => d.tasks);
         const weekdayLabels = this.dailyBreakdown.filter(d => !d.isWeekend).map(d => `Day ${d.day}`);
         const weekendLabels = this.dailyBreakdown.filter(d => d.isWeekend).map(d => `Day ${d.day}`);
-        
+
         this.charts.timeline = new Chart(ctx, {
             type: 'bar',
             data: {
@@ -469,13 +469,13 @@ class RampPlanningApp {
     createResourcesChart() {
         const ctx = document.getElementById('resourcesChart');
         if (!ctx) return;
-        
+
         if (this.charts.resources) {
             this.charts.resources.destroy();
         }
-        
+
         const labels = this.dailyBreakdown.map(d => `Day ${d.day}`);
-        
+
         this.charts.resources = new Chart(ctx, {
             type: 'line',
             data: {
@@ -536,13 +536,13 @@ class RampPlanningApp {
     createAHTChart() {
         const ctx = document.getElementById('ahtChart');
         if (!ctx) return;
-        
+
         if (this.charts.aht) {
             this.charts.aht.destroy();
         }
-        
+
         const labels = this.dailyBreakdown.map(d => `Day ${d.day}`);
-        
+
         const datasets = [
             { label: 'L-1', color: '#5D878F', key: 'l1' },
             { label: 'L0', color: '#1FB8CD', key: 'l0' },
@@ -618,7 +618,7 @@ class RampPlanningApp {
             ['Effective AHT per Task', this.metrics.effectiveAHT],
             ['Weekly Allocated Hours', this.metrics.weeklyAllocatedHours.join('; ')]
         ];
-        
+
         const csvContent = data.map(row => row.join(',')).join('\n');
         const blob = new Blob([csvContent], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
