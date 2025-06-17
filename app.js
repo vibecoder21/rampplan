@@ -56,7 +56,7 @@ class RampPlanningApp {
             'dailyHours', 'wtAttempters', 'wtReviewers', 'totalMissions',
             'cost30min', 'cost60min'
         ];
-        
+
         inputs.forEach(id => {
             const element = document.getElementById(id === 'targetPeriodWeeks' ? 'targetPeriod' : id);
             if (element) {
@@ -85,10 +85,11 @@ class RampPlanningApp {
             }
         });
 
-        const layerCheckboxes = document.querySelectorAll('#layerSelect input[type="checkbox"]');
+        // Layer selection checkboxes
+        const layerCheckboxes = document.querySelectorAll('.layer-checkbox');
         layerCheckboxes.forEach(box => {
             box.addEventListener('change', () => {
-                const selected = Array.from(document.querySelectorAll('#layerSelect input[type="checkbox"]:checked'))
+                const selected = Array.from(document.querySelectorAll('.layer-checkbox:checked'))
                     .map(cb => parseInt(cb.value));
                 this.handleLayerSelection(selected);
             });
@@ -140,15 +141,15 @@ class RampPlanningApp {
         tabButtons.forEach(button => {
             button.addEventListener('click', () => {
                 const tabId = button.getAttribute('data-tab');
-                
+
                 // Remove active class from all tabs and contents
                 tabButtons.forEach(btn => btn.classList.remove('active'));
                 tabContents.forEach(content => content.classList.remove('active'));
-                
+
                 // Add active class to clicked tab and corresponding content
                 button.classList.add('active');
                 document.getElementById(`${tabId}-tab`).classList.add('active');
-                
+
                 // Update charts when tab becomes visible
                 setTimeout(() => {
                     if (this.charts[tabId]) {
@@ -161,13 +162,13 @@ class RampPlanningApp {
 
     setupCollapsibleSections() {
         const sectionHeaders = document.querySelectorAll('.section-header');
-        
+
         sectionHeaders.forEach(header => {
             header.addEventListener('click', () => {
                 const sectionId = header.getAttribute('data-section') + '-section';
                 const content = document.getElementById(sectionId);
                 const icon = header.querySelector('.collapse-icon');
-                
+
                 if (content.classList.contains('collapsed')) {
                     content.classList.remove('collapsed');
                     header.classList.remove('collapsed');
@@ -183,14 +184,14 @@ class RampPlanningApp {
 
     calculateMetrics() {
         const config = this.config;
-        
+
         // Base calculations
         const workingDaysPerWeek = 5;
         const weekendDaysPerWeek = 2;
         const totalDays = config.targetPeriodWeeks * 7;
         const workingDays = config.targetPeriodWeeks * workingDaysPerWeek;
         const weekendDays = config.targetPeriodWeeks * weekendDaysPerWeek;
-        
+
         // SBQ adjustment
         const l1Tasks = config.targetTasks / (1 - config.sbqRate / 100);
         const l0Tasks = l1Tasks * 0.7; // Fixed 70% yield
@@ -198,11 +199,11 @@ class RampPlanningApp {
         const l4StageTasks = l1StageTasks / (1 - config.sbqRateL4 / 100);
         const l10StageTasks = l4StageTasks / (1 - config.sbqRateL10 / 100);
         const l12StageTasks = l10StageTasks / (1 - config.sbqRateL12 / 100);
-        
+
         // Effective workforce (considering activation and screening rates)
         const effectiveAttempters = config.wtAttempters * (config.activationRate / 100) * (config.screeningRate / 100);
         const effectiveReviewers = config.wtReviewers * (config.activationRate / 100) * (config.screeningRate / 100);
-        
+
         // Calculate base task capacity per day based on workforce
         const baseCapacityPerDay = effectiveAttempters * config.dailyHours / config.l1AHT;
         
