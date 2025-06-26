@@ -11,9 +11,11 @@ class RampPlanningApp {
             projectName: "Sample GenAI Project",
             targetTasks: 10000,
             targetPeriodWeeks: 2,
+            targetPeriodDays: 0,
+            startDate: new Date().toISOString().split('T')[0],
             l1AHT: 0.5,        // L-1 AHT
             l0AHT: 0.32,
-            sbqRate: 15,       // L-1 SBQ
+            sbqRateL0: 15,
             l1StageAHT: 0.45,
             sbqRateL1: 10,
             l4StageAHT: 0.55,
@@ -40,6 +42,10 @@ class RampPlanningApp {
 
     init() {
         this.bindEvents();
+        const startDateInput = document.getElementById('startDate');
+        if (startDateInput) {
+            startDateInput.value = this.config.startDate;
+        }
         this.updateLayerVisibility();
         this.setupTabs();
         this.setupCollapsibleSections();
@@ -51,7 +57,7 @@ class RampPlanningApp {
     bindEvents() {
         // Form inputs
         const inputs = [
-            'projectName', 'targetTasks', 'targetPeriodWeeks',
+            'projectName', 'targetTasks', 'targetPeriodWeeks', 'targetPeriodDays', 'startDate',
             'l1AHT', 'l0AHT', 'l1StageAHT', 'l4StageAHT', 'l10StageAHT', 'l12StageAHT',
             'dailyHours', 'wtAttempters', 'wtReviewers', 'totalMissions',
             'cost30min', 'cost60min'
@@ -65,13 +71,22 @@ class RampPlanningApp {
         });
 
         // Sliders
-        const sliders = ['sbqRate', 'sbqRateL1', 'sbqRateL4', 'sbqRateL10', 'sbqRateL12', 'activationRate', 'screeningRate'];
+        const sliders = ['sbqRateL0', 'sbqRateL1', 'sbqRateL4', 'sbqRateL10', 'sbqRateL12', 'activationRate', 'screeningRate'];
         sliders.forEach(id => {
             const element = document.getElementById(id);
+            const numInput = document.getElementById(`${id}Input`);
             if (element) {
                 element.addEventListener('input', () => {
+                    if (numInput) numInput.value = element.value;
                     this.handleInputChange(id, element.value);
                     this.updateSliderValue(id, element.value);
+                });
+            }
+            if (numInput) {
+                numInput.addEventListener('input', () => {
+                    element.value = numInput.value;
+                    this.handleInputChange(id, numInput.value);
+                    this.updateSliderValue(id, numInput.value);
                 });
             }
         });
@@ -85,11 +100,13 @@ class RampPlanningApp {
             }
         });
 
-        const layerSelect = document.getElementById('layerSelect');
-        if (layerSelect) {
-            layerSelect.addEventListener('change', () => {
-                const selected = Array.from(layerSelect.selectedOptions).map(opt => parseInt(opt.value));
-                this.handleLayerSelection(selected);
+        const layerRadios = document.querySelectorAll('#layerRadios input[name="layer"]');
+        if (layerRadios.length) {
+            layerRadios.forEach(cb => {
+                cb.addEventListener('change', () => {
+                    const selected = Array.from(layerRadios).filter(el => el.checked).map(el => parseInt(el.value));
+                    this.handleLayerSelection(selected);
+                });
             });
         }
 
@@ -110,11 +127,11 @@ class RampPlanningApp {
 
     handleInputChange(key, value) {
         // Convert to appropriate type
-        if (['targetTasks', 'targetPeriodWeeks', 'dailyHours', 'wtAttempters', 'wtReviewers', 'totalMissions', 'webinarDuration'].includes(key)) {
+        if (['targetTasks', 'targetPeriodWeeks', 'targetPeriodDays', 'dailyHours', 'wtAttempters', 'wtReviewers', 'totalMissions', 'webinarDuration'].includes(key)) {
             this.config[key] = parseInt(value);
         } else if (['l1AHT', 'l0AHT', 'l1StageAHT', 'l4StageAHT', 'l10StageAHT', 'l12StageAHT', 'cost30min', 'cost60min'].includes(key)) {
             this.config[key] = parseFloat(value);
-        } else if (['sbqRate', 'sbqRateL1', 'sbqRateL4', 'sbqRateL10', 'sbqRateL12', 'activationRate', 'screeningRate', 'weekendBoost', 'productivityBoost'].includes(key)) {
+        } else if (['sbqRateL0', 'sbqRateL1', 'sbqRateL4', 'sbqRateL10', 'sbqRateL12', 'activationRate', 'screeningRate', 'weekendBoost', 'productivityBoost'].includes(key)) {
             this.config[key] = parseInt(value);
         } else {
             this.config[key] = value;
@@ -126,9 +143,15 @@ class RampPlanningApp {
     }
 
     updateSliderValue(id, value) {
-        const valueSpan = document.querySelector(`#${id}`).parentElement.querySelector('.slider-value');
+        const parent = document.getElementById(id)?.parentElement;
+        if (!parent) return;
+        const valueSpan = parent.querySelector('.slider-value');
         if (valueSpan) {
             valueSpan.textContent = `${value}%`;
+        }
+        const numInput = parent.querySelector('.slider-number');
+        if (numInput) {
+            numInput.value = value;
         }
     }
 
@@ -186,13 +209,13 @@ class RampPlanningApp {
         // Base calculations
         const workingDaysPerWeek = 5;
         const weekendDaysPerWeek = 2;
-        const totalDays = config.targetPeriodWeeks * 7;
-        const workingDays = config.targetPeriodWeeks * workingDaysPerWeek;
-        const weekendDays = config.targetPeriodWeeks * weekendDaysPerWeek;
+        const totalDays = config.targetPeriodDays || (config.targetPeriodWeeks * 7);
+        const workingDays = (totalDays / 7) * workingDaysPerWeek;
+        const weekendDays = (totalDays / 7) * weekendDaysPerWeek;
         
         // SBQ adjustment
-        const l1Tasks = config.targetTasks / (1 - config.sbqRate / 100);
-        const l0Tasks = l1Tasks * 0.7; // Fixed 70% yield
+        const l1Tasks = config.targetTasks;
+        const l0Tasks = l1Tasks / (1 - config.sbqRateL0 / 100);
         const l1StageTasks = l0Tasks / (1 - config.sbqRateL1 / 100);
         const l4StageTasks = l1StageTasks / (1 - config.sbqRateL4 / 100);
         const l10StageTasks = l4StageTasks / (1 - config.sbqRateL10 / 100);
@@ -230,7 +253,7 @@ class RampPlanningApp {
         // Calculate effective AHT
         const effectiveAHT =
             (l1Hours + l0Hours + l1StageHours + l4StageHours + l10StageHours + l12StageHours) /
-            (l1Tasks + l0Tasks + l1StageTasks + l4StageTasks + l10StageTasks + l12StageTasks);
+            config.targetTasks;
         
         // Bonus mission costs
         const selectedWebinarCost = config.webinarDuration === 30 ? config.cost30min : config.cost60min;
@@ -264,7 +287,7 @@ class RampPlanningApp {
 
     calculateWeeklyAllocatedHours() {
         const config = this.config;
-        const weeks = config.targetPeriodWeeks;
+        const weeks = Math.ceil((config.targetPeriodDays || config.targetPeriodWeeks * 7) / 7);
         const weeklyHours = [];
         for (let week = 0; week < weeks; week++) {
             const start = week * 7;
@@ -279,12 +302,15 @@ class RampPlanningApp {
 
     generateDailyBreakdown() {
         const config = this.config;
-        const totalDays = config.targetPeriodWeeks * 7;
+        const totalDays = config.targetPeriodDays || (config.targetPeriodWeeks * 7);
         const dailyData = [];
+        const startDate = new Date(config.startDate);
         
         for (let day = 1; day <= totalDays; day++) {
-            const isWeekend = day % 7 === 0 || day % 7 === 6;
-            const dayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][day % 7];
+            const currentDate = new Date(startDate);
+            currentDate.setDate(startDate.getDate() + day - 1);
+            const isWeekend = currentDate.getDay() === 0 || currentDate.getDay() === 6;
+            const dayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][currentDate.getDay()];
             
             // Apply ramp pattern
             let rampMultiplier = 1;
@@ -316,8 +342,10 @@ class RampPlanningApp {
                 l12Stage: config.l12StageAHT * ahtImprovement
             };
 
+            const dateLabel = currentDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
             dailyData.push({
                 day,
+                date: dateLabel,
                 dayName,
                 isWeekend,
                 tasks: adjustedTasks,
@@ -397,11 +425,11 @@ class RampPlanningApp {
             this.charts.timeline.destroy();
         }
         
-        const labels = this.dailyBreakdown.map(d => `Day ${d.day}`);
+        const labels = this.dailyBreakdown.map(d => d.date);
         const weekdayTasks = this.dailyBreakdown.filter(d => !d.isWeekend).map(d => d.tasks);
         const weekendTasks = this.dailyBreakdown.filter(d => d.isWeekend).map(d => d.tasks);
-        const weekdayLabels = this.dailyBreakdown.filter(d => !d.isWeekend).map(d => `Day ${d.day}`);
-        const weekendLabels = this.dailyBreakdown.filter(d => d.isWeekend).map(d => `Day ${d.day}`);
+        const weekdayLabels = this.dailyBreakdown.filter(d => !d.isWeekend).map(d => d.date);
+        const weekendLabels = this.dailyBreakdown.filter(d => d.isWeekend).map(d => d.date);
         
         this.charts.timeline = new Chart(ctx, {
             type: 'bar',
@@ -466,7 +494,7 @@ class RampPlanningApp {
             this.charts.resources.destroy();
         }
         
-        const labels = this.dailyBreakdown.map(d => `Day ${d.day}`);
+        const labels = this.dailyBreakdown.map(d => d.date);
         
         this.charts.resources = new Chart(ctx, {
             type: 'line',
@@ -533,7 +561,7 @@ class RampPlanningApp {
             this.charts.aht.destroy();
         }
         
-        const labels = this.dailyBreakdown.map(d => `Day ${d.day}`);
+        const labels = this.dailyBreakdown.map(d => d.date);
         
         const datasets = [
             { label: 'L-1', color: '#5D878F', key: 'l1' },
@@ -600,6 +628,8 @@ class RampPlanningApp {
             ['Project Name', this.config.projectName],
             ['Target Tasks', this.config.targetTasks],
             ['Target Period (weeks)', this.config.targetPeriodWeeks],
+            ['Target Period (days)', this.config.targetPeriodDays || this.config.targetPeriodWeeks * 7],
+            ['Start Date', this.config.startDate],
             ['Daily Tasks (Weekdays)', this.metrics.dailyTasksWeekdays],
             ['Daily Tasks (Weekends)', this.metrics.dailyTasksWeekends],
             ['Daily Attempters', this.metrics.dailyAttempters],
