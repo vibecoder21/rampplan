@@ -42,7 +42,40 @@ class RampPlanningApp {
         };
     }
 
+    setupWorkforceSliders() {
+        const configSliders = [
+            { id: 'activationRate', value: this.config.activationRate },
+            { id: 'screeningRate', value: this.config.screeningRate }
+        ];
+
+        configSliders.forEach(({ id, value }) => {
+            const slider = document.getElementById(id);
+            if (!slider) return;
+            slider.min = 0;
+            slider.max = 100;
+
+            const container = slider.parentElement;
+            if (!container) return;
+
+            let numInput = container.querySelector(`#${id}Input`);
+            const valueSpan = container.querySelector('.slider-value');
+
+            if (!numInput) {
+                numInput = document.createElement('input');
+                numInput.type = 'number';
+                numInput.className = 'form-control slider-number';
+                numInput.id = `${id}Input`;
+                numInput.min = 0;
+                numInput.max = 100;
+                container.insertBefore(numInput, valueSpan || slider.nextSibling);
+            }
+
+            numInput.value = value;
+        });
+    }
+
     init() {
+        this.setupWorkforceSliders();
         this.bindEvents();
         const startDateInput = document.getElementById('startDate');
         if (startDateInput) {
