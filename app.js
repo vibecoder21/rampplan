@@ -294,8 +294,10 @@ class RampPlanningApp {
             '10': config.l10StageAHT,
             '12': config.l12StageAHT
         };
+        // Sum AHT of all selected layers without normalizing by task count
         const effectiveAHT = this.config.activeLayers
-            .reduce((sum, layer) => sum + (layerAHTMap[layer] || 0), 0);
+            .map(layer => layerAHTMap[layer] || 0)
+            .reduce((sum, aht) => sum + aht, 0);
         
         // Bonus mission costs
         const selectedWebinarCost = config.webinarDuration === 30 ? config.cost30min : config.cost60min;

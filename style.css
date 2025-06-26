@@ -1042,6 +1042,10 @@ body {
   background-clip: text;
 }
 
+#effectiveAHT.metric-value {
+  letter-spacing: 0.5px;
+}
+
 /* Chart Container */
 .chart-container {
   background-color: var(--color-surface);
