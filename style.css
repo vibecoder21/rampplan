@@ -862,7 +862,7 @@ body {
   appearance: none;
   width: 20px;
   height: 20px;
-  background: var(--color-primary);
+  background: #000;
   border-radius: 50%;
   cursor: pointer;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
@@ -871,18 +871,15 @@ body {
 .slider-container input[type="range"]::-moz-range-thumb {
   width: 20px;
   height: 20px;
-  background: var(--color-primary);
+  background: #000;
   border-radius: 50%;
   cursor: pointer;
   border: none;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.slider-value {
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-primary);
-  min-width: 40px;
-  text-align: right;
+.slider-number {
+  width: 60px;
 }
 
 /* Radio Groups */
