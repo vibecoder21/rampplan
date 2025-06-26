@@ -28,6 +28,8 @@ class RampPlanningApp {
             dailyHours: 5,
             wtAttempters: 100,
             wtReviewers: 50,
+            qms: 0,
+            consultants: 0,
             activationRate: 80,
             screeningRate: 60,
             rampPattern: "Linear",
@@ -59,7 +61,7 @@ class RampPlanningApp {
         const inputs = [
             'projectName', 'targetTasks', 'targetPeriodWeeks', 'targetPeriodDays', 'startDate',
             'l1AHT', 'l0AHT', 'l1StageAHT', 'l4StageAHT', 'l10StageAHT', 'l12StageAHT',
-            'dailyHours', 'wtAttempters', 'wtReviewers', 'totalMissions',
+            'dailyHours', 'wtAttempters', 'wtReviewers', 'qms', 'consultants', 'totalMissions',
             'cost30min', 'cost60min'
         ];
         
@@ -127,7 +129,7 @@ class RampPlanningApp {
 
     handleInputChange(key, value) {
         // Convert to appropriate type
-        if (['targetTasks', 'targetPeriodWeeks', 'targetPeriodDays', 'dailyHours', 'wtAttempters', 'wtReviewers', 'totalMissions', 'webinarDuration'].includes(key)) {
+        if (['targetTasks', 'targetPeriodWeeks', 'targetPeriodDays', 'dailyHours', 'wtAttempters', 'wtReviewers', 'qms', 'consultants', 'totalMissions', 'webinarDuration'].includes(key)) {
             this.config[key] = parseInt(value);
         } else if (['l1AHT', 'l0AHT', 'l1StageAHT', 'l4StageAHT', 'l10StageAHT', 'l12StageAHT', 'cost30min', 'cost60min'].includes(key)) {
             this.config[key] = parseFloat(value);
@@ -277,7 +279,9 @@ class RampPlanningApp {
             l10StageTasks: Math.round(l10StageTasks),
             l12StageTasks: Math.round(l12StageTasks),
             costOfMissions: costOfMissions,
-            totalCostOfMissions: totalCostOfMissions
+            totalCostOfMissions: totalCostOfMissions,
+            qms: config.qms,
+            consultants: config.consultants
         };
         
         // Generate daily breakdown for charts
@@ -289,15 +293,30 @@ class RampPlanningApp {
         const config = this.config;
         const weeks = Math.ceil((config.targetPeriodDays || config.targetPeriodWeeks * 7) / 7);
         const weeklyHours = [];
+        const weeklyAttempters = [];
+        const weeklyReviewers = [];
+        const weeklyQms = [];
+        const weeklyConsultants = [];
         for (let week = 0; week < weeks; week++) {
             const start = week * 7;
             const end = start + 7;
-            const hours = this.dailyBreakdown
-                .slice(start, end)
-                .reduce((sum, d) => sum + (d.attempters + d.reviewers) * config.dailyHours, 0);
+            const slice = this.dailyBreakdown.slice(start, end);
+            const hours = slice.reduce((sum, d) => sum + (d.attempters + d.reviewers) * config.dailyHours, 0);
+            const avgAttempters = slice.reduce((sum, d) => sum + d.attempters, 0) / slice.length;
+            const avgReviewers = slice.reduce((sum, d) => sum + d.reviewers, 0) / slice.length;
+            const avgQms = slice.reduce((sum, d) => sum + d.qms, 0) / slice.length;
+            const avgConsultants = slice.reduce((sum, d) => sum + d.consultants, 0) / slice.length;
             weeklyHours.push(Math.round(hours));
+            weeklyAttempters.push(Math.round(avgAttempters));
+            weeklyReviewers.push(Math.round(avgReviewers));
+            weeklyQms.push(Math.round(avgQms));
+            weeklyConsultants.push(Math.round(avgConsultants));
         }
         this.metrics.weeklyAllocatedHours = weeklyHours;
+        this.metrics.weeklyAttempters = weeklyAttempters;
+        this.metrics.weeklyReviewers = weeklyReviewers;
+        this.metrics.weeklyQms = weeklyQms;
+        this.metrics.weeklyConsultants = weeklyConsultants;
     }
 
     generateDailyBreakdown() {
@@ -353,7 +372,9 @@ class RampPlanningApp {
                 ahts: dailyAHTs,
                 hours: adjustedTasks * dailyAHTs.l1,
                 attempters: Math.round(this.metrics.dailyAttempters * rampMultiplier),
-                reviewers: Math.round(this.metrics.dailyReviewers * rampMultiplier)
+                reviewers: Math.round(this.metrics.dailyReviewers * rampMultiplier),
+                qms: config.qms,
+                consultants: config.consultants
             });
         }
         
@@ -634,11 +655,17 @@ class RampPlanningApp {
             ['Daily Tasks (Weekends)', this.metrics.dailyTasksWeekends],
             ['Daily Attempters', this.metrics.dailyAttempters],
             ['Daily Reviewers', this.metrics.dailyReviewers],
+            ['QMs', this.config.qms],
+            ['Consultants', this.config.consultants],
             ['Average Daily Tasks', this.metrics.avgDailyTasks],
             ['Total Project Hours', this.metrics.totalProjectHours],
             ['Peak CBs Required', this.metrics.peakCBs],
             ['Effective AHT per Task', this.metrics.effectiveAHT],
-            ['Weekly Allocated Hours', this.metrics.weeklyAllocatedHours.join('; ')]
+            ['Weekly Allocated Hours', this.metrics.weeklyAllocatedHours.join('; ')],
+            ['Weekly Attempters', this.metrics.weeklyAttempters.join('; ')],
+            ['Weekly Reviewers', this.metrics.weeklyReviewers.join('; ')],
+            ['Weekly QMs', this.metrics.weeklyQms.join('; ')],
+            ['Weekly Consultants', this.metrics.weeklyConsultants.join('; ')]
         ];
         
         const csvContent = data.map(row => row.join(',')).join('\n');
@@ -654,7 +681,15 @@ class RampPlanningApp {
     }
 
     saveConfiguration() {
-        const configData = JSON.stringify(this.config, null, 2);
+        const exportData = {
+            ...this.config,
+            weeklyAllocatedHours: this.metrics.weeklyAllocatedHours,
+            weeklyAttempters: this.metrics.weeklyAttempters,
+            weeklyReviewers: this.metrics.weeklyReviewers,
+            weeklyQms: this.metrics.weeklyQms,
+            weeklyConsultants: this.metrics.weeklyConsultants
+        };
+        const configData = JSON.stringify(exportData, null, 2);
         const blob = new Blob([configData], { type: 'application/json' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
