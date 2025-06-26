@@ -56,33 +56,41 @@
                             </select>
                         </div>
                         <div class="form-group">
+                            <label class="form-label">Target Period (days)</label>
+                            <input type="number" class="form-control" id="targetPeriodDays" min="1" placeholder="Optional">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Start Date</label>
+                            <input type="date" class="form-control" id="startDate">
+                        </div>
+                        <div class="form-group">
                             <label class="form-label">Select Layers</label>
-                            <select class="form-control" id="layerSelect" multiple>
-                                <option value="-1" selected>L-1</option>
-                                <option value="0" selected>L0</option>
-                                <option value="1" selected>L1</option>
-                                <option value="4" selected>L4</option>
-                                <option value="10" selected>L10</option>
-                                <option value="12" selected>L12</option>
-                            </select>
+                            <div id="layerRadios" class="radio-group">
+                                <label class="radio-label"><input type="checkbox" name="layer" value="-1" checked> L-1</label>
+                                <label class="radio-label"><input type="checkbox" name="layer" value="0" checked> L0</label>
+                                <label class="radio-label"><input type="checkbox" name="layer" value="1" checked> L1</label>
+                                <label class="radio-label"><input type="checkbox" name="layer" value="4" checked> L4</label>
+                                <label class="radio-label"><input type="checkbox" name="layer" value="10" checked> L10</label>
+                                <label class="radio-label"><input type="checkbox" name="layer" value="12" checked> L12</label>
+                            </div>
                         </div>
                         <div class="layer-group" data-layer="-1">
                             <div class="form-group">
                                 <label class="form-label">L-1 AHT (hours)</label>
                                 <input type="number" class="form-control" id="l1AHT" value="0.5" step="0.01">
                             </div>
-                            <div class="form-group">
-                                <label class="form-label">L-1 SBQ Rate %</label>
-                                <div class="slider-container">
-                                    <input type="range" class="form-control" id="sbqRate" min="0" max="50" value="15">
-                                    <span class="slider-value">15%</span>
-                                </div>
-                            </div>
                         </div>
                         <div class="layer-group" data-layer="0">
                             <div class="form-group">
                                 <label class="form-label">L0 AHT (hours)</label>
                                 <input type="number" class="form-control" id="l0AHT" value="0.32" step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">L0 SBQ Rate %</label>
+                                <div class="slider-container">
+                                    <input type="range" class="form-control" id="sbqRateL0" min="0" max="100" value="15">
+                                    <input type="number" class="form-control slider-number" id="sbqRateL0Input" min="0" max="100" value="15">
+                                </div>
                             </div>
                         </div>
                         <div class="layer-group" data-layer="1">
@@ -93,8 +101,8 @@
                             <div class="form-group">
                                 <label class="form-label">L1 SBQ Rate %</label>
                                 <div class="slider-container">
-                                    <input type="range" class="form-control" id="sbqRateL1" min="0" max="50" value="10">
-                                    <span class="slider-value">10%</span>
+                                    <input type="range" class="form-control" id="sbqRateL1" min="0" max="100" value="10">
+                                    <input type="number" class="form-control slider-number" id="sbqRateL1Input" min="0" max="100" value="10">
                                 </div>
                             </div>
                         </div>
@@ -106,8 +114,8 @@
                             <div class="form-group">
                                 <label class="form-label">L4 SBQ Rate %</label>
                                 <div class="slider-container">
-                                    <input type="range" class="form-control" id="sbqRateL4" min="0" max="50" value="8">
-                                    <span class="slider-value">8%</span>
+                                    <input type="range" class="form-control" id="sbqRateL4" min="0" max="100" value="8">
+                                    <input type="number" class="form-control slider-number" id="sbqRateL4Input" min="0" max="100" value="8">
                                 </div>
                             </div>
                         </div>
@@ -119,8 +127,8 @@
                             <div class="form-group">
                                 <label class="form-label">L10 SBQ Rate %</label>
                                 <div class="slider-container">
-                                    <input type="range" class="form-control" id="sbqRateL10" min="0" max="50" value="5">
-                                    <span class="slider-value">5%</span>
+                                    <input type="range" class="form-control" id="sbqRateL10" min="0" max="100" value="5">
+                                    <input type="number" class="form-control slider-number" id="sbqRateL10Input" min="0" max="100" value="5">
                                 </div>
                             </div>
                         </div>
@@ -132,8 +140,8 @@
                             <div class="form-group">
                                 <label class="form-label">L12 SBQ Rate %</label>
                                 <div class="slider-container">
-                                    <input type="range" class="form-control" id="sbqRateL12" min="0" max="50" value="3">
-                                    <span class="slider-value">3%</span>
+                                    <input type="range" class="form-control" id="sbqRateL12" min="0" max="100" value="3">
+                                    <input type="number" class="form-control slider-number" id="sbqRateL12Input" min="0" max="100" value="3">
                                 </div>
                             </div>
                         </div>
