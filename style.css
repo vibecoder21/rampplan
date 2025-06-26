@@ -897,6 +897,11 @@ body {
   width: 70px;
 }
 
+/* Ensure dynamically added inputs in sliders match */
+.slider-container input[type="number"] {
+  width: 70px;
+}
+
 /* Radio Groups */
 .radio-group {
   display: flex;

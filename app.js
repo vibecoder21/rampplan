@@ -286,9 +286,16 @@ class RampPlanningApp {
         const peakCBs = Math.ceil(peakDailyHours / config.dailyHours);
         
         // Calculate effective AHT
-        const effectiveAHT =
-            (l1Hours + l0Hours + l1StageHours + l4StageHours + l10StageHours + l12StageHours) /
-            config.targetTasks;
+        const layerAHTMap = {
+            '-1': config.l1AHT,
+            '0': config.l0AHT,
+            '1': config.l1StageAHT,
+            '4': config.l4StageAHT,
+            '10': config.l10StageAHT,
+            '12': config.l12StageAHT
+        };
+        const effectiveAHT = this.config.activeLayers
+            .reduce((sum, layer) => sum + (layerAHTMap[layer] || 0), 0);
         
         // Bonus mission costs
         const selectedWebinarCost = config.webinarDuration === 30 ? config.cost30min : config.cost60min;
