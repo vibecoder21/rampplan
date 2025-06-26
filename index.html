@@ -64,6 +64,14 @@
                             <input type="date" class="form-control" id="startDate">
                         </div>
                         <div class="form-group">
+                            <label class="form-label">QMs</label>
+                            <input type="number" class="form-control" id="qms" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Consultants</label>
+                            <input type="number" class="form-control" id="consultants" value="0">
+                        </div>
+                        <div class="form-group">
                             <label class="form-label">Select Layers</label>
                             <div id="layerRadios" class="radio-group">
                                 <label class="radio-label"><input type="checkbox" name="layer" value="-1" checked> L-1</label>
@@ -170,15 +178,15 @@
                         <div class="form-group">
                             <label class="form-label">Allocation Activation Rate %</label>
                             <div class="slider-container">
-                                <input type="range" class="form-control" id="activationRate" min="50" max="100" value="80">
-                                <span class="slider-value">80%</span>
+                                <input type="range" class="form-control" id="activationRate" min="0" max="100" value="80">
+                                <input type="number" class="form-control slider-number" id="activationRateInput" min="0" max="100" value="80">
                             </div>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Screening Exam Pass Rate %</label>
                             <div class="slider-container">
-                                <input type="range" class="form-control" id="screeningRate" min="30" max="90" value="60">
-                                <span class="slider-value">60%</span>
+                                <input type="range" class="form-control" id="screeningRate" min="0" max="100" value="60">
+                                <input type="number" class="form-control slider-number" id="screeningRateInput" min="0" max="100" value="60">
                             </div>
                         </div>
                     </div>

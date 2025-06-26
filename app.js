@@ -13,6 +13,8 @@ class RampPlanningApp {
             targetPeriodWeeks: 2,
             targetPeriodDays: 0,
             startDate: new Date().toISOString().split('T')[0],
+            qms: 0,
+            consultants: 0,
             l1AHT: 0.5,        // L-1 AHT
             l0AHT: 0.32,
             sbqRateL0: 15,
@@ -58,6 +60,7 @@ class RampPlanningApp {
         // Form inputs
         const inputs = [
             'projectName', 'targetTasks', 'targetPeriodWeeks', 'targetPeriodDays', 'startDate',
+            'qms', 'consultants',
             'l1AHT', 'l0AHT', 'l1StageAHT', 'l4StageAHT', 'l10StageAHT', 'l12StageAHT',
             'dailyHours', 'wtAttempters', 'wtReviewers', 'totalMissions',
             'cost30min', 'cost60min'
@@ -127,7 +130,7 @@ class RampPlanningApp {
 
     handleInputChange(key, value) {
         // Convert to appropriate type
-        if (['targetTasks', 'targetPeriodWeeks', 'targetPeriodDays', 'dailyHours', 'wtAttempters', 'wtReviewers', 'totalMissions', 'webinarDuration'].includes(key)) {
+        if (['targetTasks', 'targetPeriodWeeks', 'targetPeriodDays', 'dailyHours', 'wtAttempters', 'wtReviewers', 'totalMissions', 'webinarDuration', 'qms', 'consultants'].includes(key)) {
             this.config[key] = parseInt(value);
         } else if (['l1AHT', 'l0AHT', 'l1StageAHT', 'l4StageAHT', 'l10StageAHT', 'l12StageAHT', 'cost30min', 'cost60min'].includes(key)) {
             this.config[key] = parseFloat(value);
@@ -283,6 +286,7 @@ class RampPlanningApp {
         // Generate daily breakdown for charts
         this.generateDailyBreakdown();
         this.calculateWeeklyAllocatedHours();
+        this.calculateWeeklyWorkforce();
     }
 
     calculateWeeklyAllocatedHours() {
@@ -298,6 +302,24 @@ class RampPlanningApp {
             weeklyHours.push(Math.round(hours));
         }
         this.metrics.weeklyAllocatedHours = weeklyHours;
+    }
+
+    calculateWeeklyWorkforce() {
+        const config = this.config;
+        const weeks = Math.ceil((config.targetPeriodDays || config.targetPeriodWeeks * 7) / 7);
+        const weeklyAttempters = [];
+        const weeklyReviewers = [];
+        for (let week = 0; week < weeks; week++) {
+            const start = week * 7;
+            const end = start + 7;
+            const days = this.dailyBreakdown.slice(start, end);
+            const avgAttempters = days.reduce((sum, d) => sum + d.attempters, 0) / days.length;
+            const avgReviewers = days.reduce((sum, d) => sum + d.reviewers, 0) / days.length;
+            weeklyAttempters.push(Math.round(avgAttempters));
+            weeklyReviewers.push(Math.round(avgReviewers));
+        }
+        this.metrics.weeklyAttempters = weeklyAttempters;
+        this.metrics.weeklyReviewers = weeklyReviewers;
     }
 
     generateDailyBreakdown() {
@@ -654,7 +676,12 @@ class RampPlanningApp {
     }
 
     saveConfiguration() {
-        const configData = JSON.stringify(this.config, null, 2);
+        const data = {
+            config: this.config,
+            weeklyAttempters: this.metrics.weeklyAttempters,
+            weeklyReviewers: this.metrics.weeklyReviewers
+        };
+        const configData = JSON.stringify(data, null, 2);
         const blob = new Blob([configData], { type: 'application/json' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
